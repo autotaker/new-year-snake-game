@@ -9,8 +9,8 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref, reactive, watchEffect } from 'vue'
-import { useSnakeGame, GameInfo } from '@/composables/useSnakeGame'
+import { onUnmounted, ref, reactive, watchEffect } from 'vue'
+import { useSnakeGame, type GameInfo } from '@/composables/useSnakeGame'
 import { defineEmits } from 'vue'
 
 const gameCanvas = ref<HTMLCanvasElement | null>(null)

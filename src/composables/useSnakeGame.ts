@@ -1,4 +1,4 @@
-import { onMounted, onUnmounted, ref, reactive } from "vue";
+import { snakeImages } from "@/snake_images";
 
 interface Segment {
   x: number;
@@ -209,25 +209,93 @@ export function useSnakeGame(
         break;
     }
   };
+  const loadImage = (src: string) => {
+    const img = new Image();
+    img.src = src;
+    return img;
+  };
+
+  const headImages = {
+    up: loadImage(snakeImages.head.up),
+    down: loadImage(snakeImages.head.down),
+    left: loadImage(snakeImages.head.left),
+    right: loadImage(snakeImages.head.right),
+  };
+
+  const tailImages = {
+    up: loadImage(snakeImages.tail.up),
+    down: loadImage(snakeImages.tail.down),
+    left: loadImage(snakeImages.tail.left),
+    right: loadImage(snakeImages.tail.right),
+  };
+
+  const bodyImages: { [key: string]: HTMLImageElement } = {
+    up_down: loadImage(snakeImages.body.up_down),
+    down_up: loadImage(snakeImages.body.down_up),
+    left_right: loadImage(snakeImages.body.left_right),
+    right_left: loadImage(snakeImages.body.right_left),
+    up_right: loadImage(snakeImages.body.up_right),
+    right_up: loadImage(snakeImages.body.right_up),
+    up_left: loadImage(snakeImages.body.up_left),
+    left_up: loadImage(snakeImages.body.left_up),
+    down_right: loadImage(snakeImages.body.down_right),
+    right_down: loadImage(snakeImages.body.right_down),
+    down_left: loadImage(snakeImages.body.down_left),
+    left_down: loadImage(snakeImages.body.left_down),
+  };
 
   const draw = () => {
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    // スネーク描画
+    // 背景は黒
+    // 背景は灰色
+    ctx.fillStyle = "gray";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    const getDirection = (
+      seg1: Segment,
+      seg2: Segment
+    ): "up" | "down" | "left" | "right" => {
+      if (seg1.x === seg2.x) {
+        return seg1.y > seg2.y ? "up" : "down";
+      } else {
+        return seg1.x > seg2.x ? "left" : "right";
+      }
+    };
+
     snake.forEach((seg, i) => {
-      // 頭は色を変える
-      ctx.fillStyle = i === 0 ? "green" : "limegreen";
       let px = seg.x * CELL_SIZE;
       let py = seg.y * CELL_SIZE;
-      ctx.fillRect(px, py, CELL_SIZE, CELL_SIZE);
 
-      // 2番目のセグメント (i=1) から ateStack[0] を表示
-      // 3番目のセグメント (i=2) に ateStack[1], ... という対応
+      if (i === 0) {
+        // Head
+        const direction = getDirection(seg, snake[1]);
+        ctx.drawImage(headImages[direction], px, py, CELL_SIZE, CELL_SIZE);
+      } else if (i === snake.length - 1) {
+        // Tail
+        const direction = getDirection(snake[i - 1], seg);
+        ctx.drawImage(tailImages[direction], px, py, CELL_SIZE, CELL_SIZE);
+      } else {
+        // Body
+        const srcDirection = getDirection(seg, snake[i - 1]);
+        const dstDirection = getDirection(seg, snake[i + 1]);
+        const bodyKey = `${srcDirection}_${dstDirection}`;
+        if (!bodyImages[bodyKey]) {
+          console.error("Invalid body key", bodyKey);
+          console.error("prev_snake", snake[i - 1]);
+          console.error("seg", seg);
+          console.error("next_snake", snake[i + 1]);
+          return;
+        }
+        ctx.drawImage(bodyImages[bodyKey], px, py, CELL_SIZE, CELL_SIZE);
+      }
+
+      // Draw ateStack numbers
       let stackIndex = i - 1;
       if (stackIndex >= 0 && stackIndex < ateStack.length) {
-        ctx.fillStyle = "white";
+        ctx.fillStyle = "black";
         ctx.font = "12px sans-serif";
         ctx.fillText(
           ateStack[ateStack.length - stackIndex - 1],
@@ -257,7 +325,16 @@ export function useSnakeGame(
       ctx.fillStyle = color;
       let px = item.x * CELL_SIZE;
       let py = item.y * CELL_SIZE;
-      ctx.fillRect(px, py, CELL_SIZE, CELL_SIZE);
+      // 円で塗りつぶし
+      ctx.beginPath();
+      ctx.arc(
+        px + CELL_SIZE / 2,
+        py + CELL_SIZE / 2,
+        CELL_SIZE / 2,
+        0,
+        Math.PI * 2
+      );
+      ctx.fill();
 
       // アイテム文字
       ctx.fillStyle = "white";

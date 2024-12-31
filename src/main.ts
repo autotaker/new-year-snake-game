@@ -1,7 +1,7 @@
-import { createApp } from 'vue'
-import App from './App.vue'
+import { createApp } from "vue";
+import App from "./App.vue";
 
 // ここで Bulma を読み込む
-import 'bulma/bulma.scss'
+import "bulma/bulma.scss";
 
-createApp(App).mount('#app')
+createApp(App).mount("#app");
