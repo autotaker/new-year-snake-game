@@ -53,10 +53,12 @@ export function useSnakeGame(
   canvas.height = ROWS * CELL_SIZE;
 
   // ========= 関数群(同内容) =========
+  const initX = Math.floor(COLS / 2);
+  const initY = Math.floor(ROWS / 2);
   const initGame = () => {
     snake = [
-      { x: 10, y: 10 },
-      { x: 9, y: 10 },
+      { x: initX + 1, y: initY },
+      { x: initX, y: initY },
     ];
     vx = 1;
     vy = 0;
@@ -64,6 +66,7 @@ export function useSnakeGame(
     ateStack = [];
     items = [];
     startTime = Date.now();
+    score = 0;
 
     for (let i = 0; i < MAX_ITEMS; i++) spawnItem();
     updateInfo();
