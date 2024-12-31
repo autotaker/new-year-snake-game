@@ -56,7 +56,7 @@ function gameStart() {
 }
 
 function copyResult() {
-  const text = `新年スネークゲームでスコア: ${gameOverMessage.value}を獲得しました！\n https://new-year-snake-game.vercel.app #2025スネークゲーム`;
+  const text = `新年スネークゲームをプレイしました！${gameOverMessage.value}\n https://new-year-snake-game.vercel.app #2025スネークゲーム`;
   navigator.clipboard.writeText(text).then(() =>
     alert('スコアをコピーしました')
   );
