@@ -12,7 +12,7 @@
           </div>
           <div class="has-text-centered" v-if="gameState === 'gameover'">
             <p class="is-size-3 has-text-danger">ゲームオーバー</p>
-            <p>{{ gameOverMessage }}</p>
+            <p class="mt-3 mb-3 has-text-info">{{ gameOverMessage }}</p>
             <div class="buttons">
               <button class="button is-primary" @click="gameStart()">もう一度プレイ</button>
               <button class="button" @click="copyResult()">スコアをコピー</button>
@@ -36,6 +36,7 @@
         <ul>
           <li>2025/01/01 1時: リリース</li>
           <li>2025/01/01 7時: ヘビの初期位置を調整し、スコアがリセットされないバグを修正しました</li>
+          <li>2025/01/01 8時: コンボのロジックを変更し、ゲームオーバー時のUIを調整しました</li>
         </ul>
       </div>
     </div>

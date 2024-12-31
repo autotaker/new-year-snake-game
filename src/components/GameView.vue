@@ -55,11 +55,11 @@ function gameOverHandler(reason: string, score: number) {
 }
 
 let toastTimer: number | null = null
-function comboHandler(combo: string, bonus: number) {
+function comboHandler(combo: string, message: string, bonus: number) {
     if (toastTimer) {
         clearTimeout(toastTimer)
     }
-    comboMessage.value = `${combo == "2025" ? "あけましておめでとう！" : "５連"} ${combo}! +${bonus}`
+    comboMessage.value = `${message} ${combo}! +${bonus}`
     toastTimer = setTimeout(() => {
         comboMessage.value = ''
     }, 2000)

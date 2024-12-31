@@ -23,7 +23,7 @@ export function useSnakeGame(
   canvas: HTMLCanvasElement,
   gameInfo: GameInfo,
   gameOverHandler: (reason: string, score: number) => void,
-  comboHandler: (combo: string, bonus: number) => void
+  comboHandler: (combo: string, message: string, bonus: number) => void
 ) {
   // ========= ゲーム設定 =========
   const COLS = 15;
@@ -112,7 +112,7 @@ export function useSnakeGame(
       ateStack.push(eatenItem.type);
 
       // コンボ判定
-      const comboResult = checkCombo();
+      const [comboResult, message, bonus] = checkCombo();
       if (comboResult) {
         let cutCount = comboResult.length;
         for (let i = 0; i < cutCount; i++) {
@@ -122,9 +122,8 @@ export function useSnakeGame(
         snakeLength = snake.length; // 実際の配列長と合わせる
 
         // ボーナス
-        const bonus = comboResult === "2025" ? 100 : 50;
         score += bonus;
-        comboHandler(comboResult, bonus);
+        comboHandler(comboResult, message, bonus);
       }
 
       // 食べたアイテムを削除 & 新規生成
@@ -142,18 +141,20 @@ export function useSnakeGame(
     gameInfo.ateStack = [...ateStack];
   };
 
-  const checkCombo = () => {
+  const checkCombo: () => [string, string, number] = () => {
     const comboStr = ateStack.join("");
     if (comboStr.endsWith("2025")) {
-      return "2025";
+      return ["2025", "あけましておめでとう！", 100];
     } else if (comboStr.endsWith("00000")) {
-      return "00000";
+      return ["00000", "５連！", 50];
     } else if (comboStr.endsWith("55555")) {
-      return "55555";
+      return ["55555", "５連！", 50];
     } else if (comboStr.endsWith("22222")) {
-      return "22222";
+      return ["22222", "５連！", 50];
+    } else if (comboStr.endsWith("2525")) {
+      return ["2525", "😀😀", 25];
     }
-    return "";
+    return ["", "", 0];
   };
 
   const checkCollisions = () => {
