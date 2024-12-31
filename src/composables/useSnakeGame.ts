@@ -10,6 +10,7 @@ interface Item {
   type: string;
   born: number;
 }
+export type Direction = "up" | "down" | "left" | "right";
 export interface GameInfo {
   score: number;
   snakeLength: number;
@@ -25,11 +26,11 @@ export function useSnakeGame(
   // ========= ゲーム設定 =========
   const COLS = 20;
   const ROWS = 20;
-  const CELL_SIZE = 20;
+  const CELL_SIZE = 30;
   const MAX_ITEMS = 3;
   const ITEM_LIFETIME = 10000;
   const GAME_TIME_LIMIT = 120;
-  const snakeSpeed = 200;
+  const snakeSpeed = 300;
 
   // ========= 状態管理 =========
   let lastUpdateTime = 0;
@@ -48,7 +49,6 @@ export function useSnakeGame(
 
   // ========= 関数群(同内容) =========
   const initGame = () => {
-    document.addEventListener("keydown", handleKey);
     startTime = Date.now();
     for (let i = 0; i < MAX_ITEMS; i++) spawnItem();
     updateInfo();
@@ -181,6 +181,36 @@ export function useSnakeGame(
     items.push({ x, y, type, born: now });
   };
 
+  const changeDirection = (direction: Direction) => {
+    switch (direction) {
+      case "up":
+        if (vy !== 1) {
+          vy = -1;
+          vx = 0;
+        }
+        break;
+      case "down":
+        if (vy !== -1) {
+          vy = 1;
+          vx = 0;
+        }
+        break;
+      case "left":
+        if (vx !== 1) {
+          vx = -1;
+          vy = 0;
+        }
+        break;
+      case "right":
+        if (vx !== -1) {
+          vx = 1;
+          vy = 0;
+        }
+        break;
+    }
+  };
+
+  /*
   const handleKey = (e: KeyboardEvent) => {
     switch (e.key) {
       case "ArrowLeft":
@@ -209,6 +239,7 @@ export function useSnakeGame(
         break;
     }
   };
+  */
   const loadImage = (src: string) => {
     const img = new Image();
     img.src = src;
@@ -275,7 +306,7 @@ export function useSnakeGame(
         ctx.drawImage(headImages[direction], px, py, CELL_SIZE, CELL_SIZE);
       } else if (i === snake.length - 1) {
         // Tail
-        const direction = getDirection(snake[i - 1], seg);
+        const direction = getDirection(seg, snake[i - 1]);
         ctx.drawImage(tailImages[direction], px, py, CELL_SIZE, CELL_SIZE);
       } else {
         // Body
@@ -365,11 +396,11 @@ export function useSnakeGame(
 
   const onUnmountedHandler = () => {
     cancelAnimationFrame(animationFrameId);
-    document.removeEventListener("keydown", handleKey);
   };
 
   return {
     onMountedHandler,
     onUnmountedHandler,
+    changeDirection,
   };
 }
