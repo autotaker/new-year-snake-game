@@ -2,8 +2,8 @@
     <div class="has-text-centered">
         <canvas ref="gameCanvas"></canvas>
         <div class="mt-3">
-            スコア: {{ gameInfo.score }} | 体長: {{ gameInfo.snakeLength }} | 経過: {{ gameInfo.elapsedSec }}s | Stack: [{{
-                gameInfo.ateStack.join(', ') }}]
+            スコア: {{ gameInfo.score }} | 体長: {{ gameInfo.snakeLength }} | 残り時間: {{ gameInfo.remaningSeconds.toFixed(1)
+            }}s
         </div>
         <div class="mt-3 toast is-size-3 has-text-weight-bold has-text-warning" v-if="comboMessage">
             {{ comboMessage }}
@@ -25,7 +25,7 @@ const gameInfo = reactive<GameInfo>({
     state: 'init',
     score: 0,
     snakeLength: 0,
-    elapsedSec: '0.0',
+    remaningSeconds: 120,
     ateStack: []
 })
 const comboMessage = ref<string>('')

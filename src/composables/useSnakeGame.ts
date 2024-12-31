@@ -15,7 +15,7 @@ export interface GameInfo {
   state: "init" | "playing" | "gameover";
   score: number;
   snakeLength: number;
-  elapsedSec: string;
+  remaningSeconds: number;
   ateStack: string[];
 }
 
@@ -26,8 +26,8 @@ export function useSnakeGame(
   comboHandler: (combo: string, bonus: number) => void
 ) {
   // ========= ゲーム設定 =========
-  const COLS = 20;
-  const ROWS = 20;
+  const COLS = 15;
+  const ROWS = 15;
   const CELL_SIZE = 40;
   const MAX_ITEMS = 3;
   const ITEM_LIFETIME = 10000;
@@ -399,8 +399,8 @@ export function useSnakeGame(
 
   const updateInfo = () => {
     const now = Date.now();
-    const elapsedSec = ((now - startTime) / 1000).toFixed(1);
-    gameInfo.elapsedSec = elapsedSec;
+    const elapsedSec = (now - startTime) / 1000;
+    gameInfo.remaningSeconds = GAME_TIME_LIMIT - elapsedSec;
     gameInfo.score = score;
     gameInfo.snakeLength = snakeLength;
     gameInfo.ateStack = [...ateStack];
