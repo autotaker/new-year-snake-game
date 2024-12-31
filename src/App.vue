@@ -1,30 +1,31 @@
-<script setup>
-import HelloWorld from './components/HelloWorld.vue'
-</script>
-
 <template>
-  <div>
-    <a href="https://vitejs.dev" target="_blank">
-      <img src="/vite.svg" class="logo" alt="Vite logo" />
-    </a>
-    <a href="https://vuejs.org/" target="_blank">
-      <img src="./assets/vue.svg" class="logo vue" alt="Vue logo" />
-    </a>
-  </div>
-  <HelloWorld msg="Vite + Vue" />
+  <section class="section">
+    <div class="container">
+      <h1 class="title is-3">2025スネークゲーム</h1>
+      <p class="subtitle is-5">数字を食べてスコアを稼ごう！壁や自分の体に当たるとゲームオーバー！</p>
+      <!-- ゲームコンポーネントを呼び出し -->
+      <div v-if="gameState === 'init'">
+        <button class="button is-primary" @click="gameState = 'playing'">ゲームスタート</button>
+      </div>
+      <GameView v-else-if="gameState === 'playing'" @gameOver="handleGameOver" />
+      <div v-else-if="gameState === 'gameover'">
+        <p class="has-text-danger">ゲームオーバー</p>
+        <p>{{ gameOverMessage }}</p>
+        <button class="button is-primary" @click="gameState = 'playing'">もう一度プレイ</button>
+      </div>
+    </div>
+  </section>
 </template>
 
-<style scoped>
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
+<script setup lang="ts">
+import { ref } from 'vue';
+import GameView from './components/GameView.vue'
+
+const gameState = ref<'init' | 'playing' | 'gameover'>('init')
+const gameOverMessage = ref<string>('')
+
+const handleGameOver = (reason: string, score: number) => {
+  gameState.value = 'gameover'
+  gameOverMessage.value = `ゲームオーバー: ${reason}\nスコア: ${score}`
 }
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.vue:hover {
-  filter: drop-shadow(0 0 2em #42b883aa);
-}
-</style>
+</script>
