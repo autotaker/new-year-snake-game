@@ -12,6 +12,7 @@ interface Item {
 }
 export type Direction = "up" | "down" | "left" | "right";
 export interface GameInfo {
+  state: "init" | "playing" | "gameover";
   score: number;
   snakeLength: number;
   elapsedSec: string;
@@ -19,18 +20,19 @@ export interface GameInfo {
 }
 
 export function useSnakeGame(
-  canvas: HTMLCanvasElement | null,
+  canvas: HTMLCanvasElement,
   gameInfo: GameInfo,
-  gameOverHandler: (reason: string, score: number) => void
+  gameOverHandler: (reason: string, score: number) => void,
+  comboHandler: (combo: string, bonus: number) => void
 ) {
   // ========= ゲーム設定 =========
   const COLS = 20;
   const ROWS = 20;
-  const CELL_SIZE = 30;
+  const CELL_SIZE = 40;
   const MAX_ITEMS = 3;
   const ITEM_LIFETIME = 10000;
   const GAME_TIME_LIMIT = 120;
-  const snakeSpeed = 300;
+  const snakeSpeed = 200;
 
   // ========= 状態管理 =========
   let lastUpdateTime = 0;
@@ -47,9 +49,22 @@ export function useSnakeGame(
   let startTime = 0;
   let animationFrameId = 0;
 
+  canvas.width = COLS * CELL_SIZE;
+  canvas.height = ROWS * CELL_SIZE;
+
   // ========= 関数群(同内容) =========
   const initGame = () => {
+    snake = [
+      { x: 10, y: 10 },
+      { x: 9, y: 10 },
+    ];
+    vx = 1;
+    vy = 0;
+    snakeLength = snake.length;
+    ateStack = [];
+    items = [];
     startTime = Date.now();
+
     for (let i = 0; i < MAX_ITEMS; i++) spawnItem();
     updateInfo();
   };
@@ -64,7 +79,9 @@ export function useSnakeGame(
     if (timestamp - lastUpdateTime >= snakeSpeed) {
       lastUpdateTime = timestamp;
       moveSnake();
-      checkCollisions();
+      if (checkCollisions()) {
+        return;
+      }
       updateItems();
     }
     draw();
@@ -91,24 +108,20 @@ export function useSnakeGame(
       // スタックに追加
       ateStack.push(eatenItem.type);
 
-      // 2025判定
-      if (check2025Combo()) {
-        // 末尾から4つ pop
-        ateStack.pop(); // '5'
-        ateStack.pop(); // '2'
-        ateStack.pop(); // '0'
-        ateStack.pop(); // '2'
-
-        // 尻尾を4つ削る (最低1セグメントは残す)
-        let cutCount = 4;
-        while (cutCount > 0 && snake.length > 1) {
+      // コンボ判定
+      const comboResult = checkCombo();
+      if (comboResult) {
+        let cutCount = comboResult.length;
+        for (let i = 0; i < cutCount; i++) {
+          ateStack.pop();
           snake.pop();
-          cutCount--;
         }
         snakeLength = snake.length; // 実際の配列長と合わせる
 
         // ボーナス
-        score += 50;
+        const bonus = comboResult === "2025" ? 100 : 50;
+        score += bonus;
+        comboHandler(comboResult, bonus);
       }
 
       // 食べたアイテムを削除 & 新規生成
@@ -126,26 +139,36 @@ export function useSnakeGame(
     gameInfo.ateStack = [...ateStack];
   };
 
-  const check2025Combo = () => {
-    if (ateStack.length < 4) return false;
-    let last4 = ateStack.slice(-4).join(""); // 末尾4つの文字列
-    return last4 === "2025";
+  const checkCombo = () => {
+    const comboStr = ateStack.join("");
+    if (comboStr.endsWith("2025")) {
+      return "2025";
+    } else if (comboStr.endsWith("00000")) {
+      return "00000";
+    } else if (comboStr.endsWith("55555")) {
+      return "55555";
+    } else if (comboStr.endsWith("22222")) {
+      return "22222";
+    }
+    return "";
   };
 
   const checkCollisions = () => {
     const head = snake[0];
     // 壁
     if (head.x < 0 || head.x >= COLS || head.y < 0 || head.y >= ROWS) {
+      console.log("壁に衝突", head);
       endGame("壁に衝突");
-      return;
+      return true;
     }
     // 自己衝突
     for (let i = 1; i < snake.length; i++) {
       if (snake[i].x === head.x && snake[i].y === head.y) {
         endGame("自分の体に衝突");
-        return;
+        return true;
       }
     }
+    return false;
   };
 
   const updateItems = () => {
@@ -276,13 +299,12 @@ export function useSnakeGame(
   };
 
   const draw = () => {
-    if (!canvas) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     // 背景は黒
     // 背景は灰色
-    ctx.fillStyle = "gray";
+    ctx.fillStyle = "#866";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     const getDirection = (
@@ -327,11 +349,11 @@ export function useSnakeGame(
       let stackIndex = i - 1;
       if (stackIndex >= 0 && stackIndex < ateStack.length) {
         ctx.fillStyle = "black";
-        ctx.font = "12px sans-serif";
+        ctx.font = "20px sans-serif";
         ctx.fillText(
           ateStack[ateStack.length - stackIndex - 1],
-          px + 6,
-          py + 14
+          px + CELL_SIZE / 2 - 6,
+          py + CELL_SIZE / 2 + 8
         );
       }
     });
@@ -341,13 +363,13 @@ export function useSnakeGame(
       let color;
       switch (item.type) {
         case "0":
-          color = "red";
+          color = "#CD7F32";
           break;
         case "2":
-          color = "blue";
+          color = "#C0C0C0";
           break;
         case "5":
-          color = "orange";
+          color = "#FFD700";
           break;
         default:
           color = "gray";
@@ -368,9 +390,9 @@ export function useSnakeGame(
       ctx.fill();
 
       // アイテム文字
-      ctx.fillStyle = "white";
-      ctx.font = "14px sans-serif";
-      ctx.fillText(item.type, px + 6, py + 14);
+      ctx.fillStyle = "black";
+      ctx.font = "bold 24px sans-serif";
+      ctx.fillText(item.type, px + CELL_SIZE / 2 - 8, py + CELL_SIZE / 2 + 8);
     });
     updateInfo();
   };
@@ -385,11 +407,14 @@ export function useSnakeGame(
   };
 
   const endGame = (reason: string) => {
-    draw();
+    gameInfo.state = "gameover";
     gameOverHandler(reason, score);
   };
 
-  const onMountedHandler = () => {
+  const gameStart = () => {
+    console.log("game start");
+    if (gameInfo.state === "playing") return;
+    gameInfo.state = "playing";
     initGame();
     animationFrameId = requestAnimationFrame(gameLoop);
   };
@@ -399,7 +424,7 @@ export function useSnakeGame(
   };
 
   return {
-    onMountedHandler,
+    gameStart,
     onUnmountedHandler,
     changeDirection,
   };

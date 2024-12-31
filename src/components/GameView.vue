@@ -1,47 +1,51 @@
 <template>
-    <div style="text-align:center;">
-        <canvas ref="gameCanvas" width="600" height="600"></canvas>
+    <div class="has-text-centered">
+        <canvas ref="gameCanvas"></canvas>
         <div class="mt-3">
             スコア: {{ gameInfo.score }} | 体長: {{ gameInfo.snakeLength }} | 経過: {{ gameInfo.elapsedSec }}s | Stack: [{{
                 gameInfo.ateStack.join(', ') }}]
+        </div>
+        <div class="mt-3 toast is-size-3 has-text-weight-bold has-text-warning" v-if="comboMessage">
+            {{ comboMessage }}
         </div>
     </div>
 </template>
 
 <script setup lang="ts">
-import { onUnmounted, ref, reactive, watchEffect } from 'vue'
-import { useSnakeGame, type GameInfo, type Direction } from '@/composables/useSnakeGame'
+import { onUnmounted, ref, reactive, watchEffect, watch, onMounted } from 'vue'
+import { useSnakeGame, type GameInfo } from '@/composables/useSnakeGame'
 import { defineEmits } from 'vue'
 import { usePointerSwipe } from '@vueuse/core'
 
+const props = defineProps<{
+    gameId: string | null
+}>()
 const gameCanvas = ref<HTMLCanvasElement | null>(null)
 const gameInfo = reactive<GameInfo>({
+    state: 'init',
     score: 0,
     snakeLength: 0,
     elapsedSec: '0.0',
     ateStack: []
 })
+const comboMessage = ref<string>('')
 const emit = defineEmits(['gameOver'])
 // Composableに refs を渡すだけ
-let unmountHandler: (() => void) | null = null
-let changeDirection: ((direction: Direction) => void) | null = null
 
 usePointerSwipe(gameCanvas, {
-    onSwipeEnd: (e, direction) => {
-        if (changeDirection) {
+    onSwipeEnd: (_, direction) => {
+        if (game) {
             switch (direction) {
                 case 'up':
                 case 'down':
                 case 'left':
                 case 'right':
-                    changeDirection(direction)
+                    game.changeDirection(direction)
                     break
                 case 'none':
                     break
             }
         }
-        console.log('onSwipe:', e)
-        console.log('direction:', direction)
     }
 })
 
@@ -50,43 +54,68 @@ function gameOverHandler(reason: string, score: number) {
     emit('gameOver', reason, score)
 }
 
+let toastTimer: number | null = null
+function comboHandler(combo: string, bonus: number) {
+    if (toastTimer) {
+        clearTimeout(toastTimer)
+    }
+    comboMessage.value = `${combo == "2025" ? "あけましておめでとう！" : "５連"} ${combo}! +${bonus}`
+    toastTimer = setTimeout(() => {
+        comboMessage.value = ''
+    }, 2000)
+}
+
+let game: ReturnType<typeof useSnakeGame> | null = null
+
+function onKeyDown(e: KeyboardEvent) {
+    if (!game) {
+        console.log('game is not ready')
+        return
+    }
+    switch (e.key) {
+        case 'ArrowUp':
+            game.changeDirection('up')
+            e.preventDefault()
+            break
+        case 'ArrowDown':
+            game.changeDirection('down')
+            e.preventDefault()
+            break
+        case 'ArrowLeft':
+            game.changeDirection('left')
+            e.preventDefault()
+            break
+        case 'ArrowRight':
+            game.changeDirection('right')
+            e.preventDefault()
+            break
+    }
+}
+
+watch(() => props.gameId, (newVal) => {
+    console.log('gameId:', newVal)
+    if (game) {
+        game.gameStart()
+    }
+
+})
+
 watchEffect(() => {
-    console.log('gameCanvas.value:', gameCanvas.value)
-    if (gameCanvas.value) {
-        const game = useSnakeGame(gameCanvas.value, gameInfo, gameOverHandler)
-        changeDirection = game.changeDirection
-        game.onMountedHandler()
-        function onKeyDown(e: KeyboardEvent) {
-            switch (e.key) {
-                case 'ArrowUp':
-                    game.changeDirection('up')
-                    e.preventDefault()
-                    break
-                case 'ArrowDown':
-                    game.changeDirection('down')
-                    e.preventDefault()
-                    break
-                case 'ArrowLeft':
-                    game.changeDirection('left')
-                    e.preventDefault()
-                    break
-                case 'ArrowRight':
-                    game.changeDirection('right')
-                    e.preventDefault()
-                    break
-            }
+    if (gameCanvas.value && !game) {
+        game = useSnakeGame(gameCanvas.value, gameInfo, gameOverHandler, comboHandler)
+        if (props.gameId !== null) {
+            game.gameStart()
         }
-        unmountHandler = () => {
-            document.removeEventListener('keydown', onKeyDown)
-            game.onUnmountedHandler()
-        }
-        document.addEventListener('keydown', onKeyDown)
     }
 })
+onMounted(() => {
+    document.addEventListener('keydown', onKeyDown)
+})
 onUnmounted(() => {
-    if (unmountHandler) {
-        unmountHandler()
+    if (game) {
+        game.onUnmountedHandler()
     }
+    document.removeEventListener('keydown', onKeyDown)
 });
 </script>
 
@@ -97,5 +126,9 @@ canvas {
     display: block;
     margin: 0 auto;
     touch-action: none;
+    aspect-ratio: 1/1;
+    width: 100%;
+    min-width: 350px;
+    max-width: 600px;
 }
 </style>
