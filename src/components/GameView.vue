@@ -74,18 +74,26 @@ function onKeyDown(e: KeyboardEvent) {
     }
     switch (e.key) {
         case 'ArrowUp':
+        case 'w':
+        case 'k':
             game.changeDirection('up')
             e.preventDefault()
             break
         case 'ArrowDown':
+        case 's':
+        case 'j':
             game.changeDirection('down')
             e.preventDefault()
             break
         case 'ArrowLeft':
+        case 'a':
+        case 'h':
             game.changeDirection('left')
             e.preventDefault()
             break
         case 'ArrowRight':
+        case 'd':
+        case 'l':
             game.changeDirection('right')
             e.preventDefault()
             break

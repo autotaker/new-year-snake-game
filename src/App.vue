@@ -23,7 +23,8 @@
       <div class="content">
         <h3>操作説明</h3>
         <p>
-          矢印キーあるいは画面をスワイプして、へびを操作します。
+          スペースキーあるいはボタンを押すとゲームがスタートします。<br />
+          矢印キー（またはwasd, hjkl）あるいは画面をスワイプして、へびを操作します。
           <br />
           へびが数字を食べるとスコアが加算されます。
           <br />
@@ -37,6 +38,7 @@
           <li>2025/01/01 1時: リリース</li>
           <li>2025/01/01 7時: ヘビの初期位置を調整し、スコアがリセットされないバグを修正しました</li>
           <li>2025/01/01 8時: コンボのロジックを変更し、ゲームオーバー時のUIを調整しました</li>
+          <li>2025/01/01 9時: キーボードショートカットを追加</li>
         </ul>
       </div>
     </div>
@@ -46,6 +48,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import GameView from './components/GameView.vue'
+import { onKeyDown } from '@vueuse/core';
 
 const gameState = ref<'init' | 'playing' | 'gameover'>('init')
 const gameOverMessage = ref<string>('')
@@ -60,6 +63,13 @@ function gameStart() {
   gameState.value = 'playing'
   gameId.value = Date.now().toString()
 }
+
+onKeyDown(' ', (event: KeyboardEvent) => {
+  event.preventDefault()
+  if (gameState.value !== 'playing') {
+    gameStart()
+  }
+})
 
 function copyResult() {
   const text = `新年スネークゲームをプレイしました！${gameOverMessage.value}\n https://new-year-snake-game.vercel.app #2025スネークゲーム`;
