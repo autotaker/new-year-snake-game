@@ -136,7 +136,7 @@ canvas {
     touch-action: none;
     aspect-ratio: 1/1;
     width: 100%;
-    min-width: 350px;
+    min-width: 300px;
     max-width: 600px;
 }
 </style>

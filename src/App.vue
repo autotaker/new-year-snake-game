@@ -39,6 +39,7 @@
           <li>2025/01/01 7時: ヘビの初期位置を調整し、スコアがリセットされないバグを修正しました</li>
           <li>2025/01/01 8時: コンボのロジックを変更し、ゲームオーバー時のUIを調整しました</li>
           <li>2025/01/01 9時: キーボードショートカットを追加</li>
+          <li>2025/01/01 11時: スマートフォンでの表示を改善</li>
         </ul>
       </div>
     </div>
@@ -83,7 +84,14 @@ function copyResult() {
 .game-panel {
   position: relative;
   margin-top: 20px;
-  min-height: 400px;
+}
+
+/* 横幅が400px以下の場合、セクションの左右のpaddingを消す */
+@media screen and (max-width: 400px) {
+  .section {
+    padding-left: 0;
+    padding-right: 0;
+  }
 }
 
 .game-panel-overlay {
