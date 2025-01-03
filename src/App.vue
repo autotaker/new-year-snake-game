@@ -15,11 +15,12 @@
             <p class="mt-3 mb-3 has-text-info">{{ gameOverMessage }}</p>
             <div class="buttons">
               <button class="button is-primary" @click="gameStart()">もう一度プレイ</button>
-              <button class="button" @click="copyResult()">スコアをコピー</button>
+              <button class="button" @click="showModal()">シェア</button>
             </div>
           </div>
         </div>
       </div>
+      <ShareModal :text="modalText" v-model="modalActive" />
       <div class="content">
         <h3>操作説明</h3>
         <p>
@@ -40,7 +41,12 @@
           <li>2025/01/01 8時: コンボのロジックを変更し、ゲームオーバー時のUIを調整しました</li>
           <li>2025/01/01 9時: キーボードショートカットを追加</li>
           <li>2025/01/01 11時: スマートフォンでの表示を改善</li>
+          <li>2025/01/03 9時: ソーシャルシェア機能追加</li>
         </ul>
+        <h3>アクセス解析について</h3>
+        本サイトではサービス改善のためにGoogle Analyticsを使用してアクセス解析を行っています。
+        これらの内容は匿名で収集され、個人を特定するものではありません。
+        オプトアウトを希望される方は<a href="https://tools.google.com/dlpage/gaoptout?hl=ja">オプトアウトツール</a>をご利用ください。
       </div>
     </div>
   </section>
@@ -50,14 +56,23 @@
 import { ref } from 'vue';
 import GameView from './components/GameView.vue'
 import { onKeyDown } from '@vueuse/core';
+import ShareModal from './components/ShareModal.vue';
 
 const gameState = ref<'init' | 'playing' | 'gameover'>('init')
 const gameOverMessage = ref<string>('')
 const gameId = ref<string | null>(null)
+const modalActive = ref(false)
+const modalText = ref('')
 
 const handleGameOver = (reason: string, score: number) => {
   gameState.value = 'gameover'
   gameOverMessage.value = `${reason} スコア: ${score}`
+}
+
+const showModal = () => {
+  console.log('show modal')
+  modalText.value = `新年スネークゲームをプレイしました！${gameOverMessage.value}\nhttps://new-year-snake-game.vercel.app #2025スネークゲーム`;
+  modalActive.value = true
 }
 
 function gameStart() {
@@ -66,18 +81,15 @@ function gameStart() {
 }
 
 onKeyDown(' ', (event: KeyboardEvent) => {
+  if (modalActive.value) {
+    return
+  }
   event.preventDefault()
   if (gameState.value !== 'playing') {
     gameStart()
   }
 })
 
-function copyResult() {
-  const text = `新年スネークゲームをプレイしました！${gameOverMessage.value}\n https://new-year-snake-game.vercel.app #2025スネークゲーム`;
-  navigator.clipboard.writeText(text).then(() =>
-    alert('スコアをコピーしました')
-  );
-}
 </script>
 
 <style scoped>

@@ -72,6 +72,10 @@ function onKeyDown(e: KeyboardEvent) {
         console.log('game is not ready')
         return
     }
+    if (gameInfo.state !== 'playing') {
+        return
+    }
+
     switch (e.key) {
         case 'ArrowUp':
         case 'w':
