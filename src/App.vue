@@ -44,9 +44,13 @@
           <li>2025/01/03 9時: ソーシャルシェア機能追加</li>
         </ul>
         <h3>アクセス解析について</h3>
-        本サイトではサービス改善のためにGoogle Analyticsを使用してアクセス解析を行っています。
-        これらの内容は匿名で収集され、個人を特定するものではありません。
-        オプトアウトを希望される方は<a href="https://tools.google.com/dlpage/gaoptout?hl=ja">オプトアウトツール</a>をご利用ください。
+        <p>
+          本サイトではサービス改善のためにGoogle Analyticsを使用してアクセス解析を行っています。
+          <br />
+          これらの内容は匿名で収集され、個人を特定するものではありません。
+          <br />
+          オプトアウトを希望される方は<a href="https://tools.google.com/dlpage/gaoptout?hl=ja">オプトアウトツール</a>をご利用ください。
+        </p>
       </div>
     </div>
   </section>
